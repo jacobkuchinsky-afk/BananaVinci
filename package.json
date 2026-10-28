@@ -1,0 +1,40 @@
+{
+  "name": "bananavinci",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx server/index.ts",
+    "check": "tsx scripts/check.ts",
+    "normalize": "tsx scripts/normalize.ts",
+    "asset": "tsx scripts/asset.ts",
+    "transcribe": "tsx scripts/transcribe.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "chokidar": "3.6.0",
+    "express": "4.21.1",
+    "immer": "10.1.1",
+    "multer": "1.4.5-lts.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "ws": "8.18.0",
+    "yaml": "2.6.1",
+    "zod": "3.23.8",
+    "zustand": "4.5.5"
+  },
+  "devDependencies": {
+    "@types/express": "4.17.21",
+    "@types/multer": "1.4.12",
+    "@types/node": "20.17.6",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "@types/ws": "8.5.13",
+    "@vitejs/plugin-react": "4.3.3",
+    "tsx": "4.19.2",
+    "typescript": "5.6.3",
+    "vite": "5.4.10",
+    "vitest": "2.1.4"
+  }
+}

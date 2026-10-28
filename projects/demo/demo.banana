@@ -1,0 +1,211 @@
+# BananaVinci project file (.banana) — safe to edit by hand or by AI.
+# The editor reloads automatically when this file is saved.
+
+# Units:  times are SECONDS  ·  x / y are PIXELS from the canvas CENTER (+y = down)
+#         rotation is DEGREES  ·  opacity is 0..1  ·  volume is 0..2 (1 = original)
+# Layers: video tracks are listed bottom-to-top (later tracks draw on top).
+# Missing properties fall back to defaults; missing object ids are generated on load.
+# Full reference: docs/BANANA_FORMAT.md
+
+format: 1
+
+# Canvas / output settings
+project:
+  name: BananaVinci Demo
+  width: 1920
+  height: 1080
+  fps: 30
+  background: "#000000"
+
+# Media files you can place on the timeline (paths are relative to this file)
+library:
+  - id: backdrop
+    file: media/backdrop.png
+    kind: image
+    width: 1080
+    height: 1080
+  - id: test-pattern
+    file: media/test_pattern.mp4
+    kind: video
+    width: 1280
+    height: 720
+    duration: 8
+    hasAudio: true
+  - id: music
+    file: media/music.mp3
+    kind: audio
+    duration: 12
+
+# Named points in time
+markers:
+  - { time: 4, name: drop, color: yellow }
+
+# Timeline. Each object: start = timeline position (s), duration = length on the timeline (s)
+tracks:
+  - id: V1
+    kind: video
+    name: Background
+    hidden: false
+    locked: false
+    objects:
+      - id: backdrop-1
+        type: image
+        source: backdrop
+        start: 0
+        duration: 4
+        enabled: true
+        note: ""
+        fit: cover
+        transform: { x: 0, y: 0, scale: 1, rotation: 0, opacity: 1, flipX: false, flipY: false }
+        fadeIn: 0.5
+        fadeOut: 0
+        effects: []
+        crop: { left: 0, right: 0, top: 0, bottom: 0 }
+      - id: test-pattern-1
+        type: video
+        source: test-pattern
+        start: 4
+        duration: 3.2
+        enabled: true
+        note: ""
+        in: 1
+        speed: 1
+        volume: 0.3
+        muted: false
+        fit: contain
+        transform: { x: 0, y: 0, scale: 1, rotation: 0, opacity: 1, flipX: false, flipY: false }
+        fadeIn: 0
+        fadeOut: 0
+        effects: []
+        crop: { left: 0, right: 0, top: 0, bottom: 0 }
+      - id: test-pattern-2
+        type: video
+        source: test-pattern
+        start: 7.2
+        duration: 2.8
+        enabled: true
+        note: ""
+        in: 4.2
+        speed: 1
+        volume: 0.3
+        muted: false
+        fit: contain
+        transform: { x: 0, y: 0, scale: 1, rotation: 0, opacity: 1, flipX: false, flipY: false }
+        fadeIn: 0
+        fadeOut: 0.5
+        effects: []
+        crop: { left: 0, right: 0, top: 0, bottom: 0 }
+  - id: V2
+    kind: video
+    name: Titles
+    hidden: false
+    locked: false
+    objects:
+      - id: title-1
+        type: text
+        start: 0.5
+        duration: 3.5
+        enabled: true
+        note: Main title. Change the text here and the editor updates live.
+        text: BANANA TIME
+        font: Inter, Segoe UI, Arial, sans-serif
+        size: 160
+        color: "#FACC15"
+        bold: true
+        italic: false
+        align: center
+        lineHeight: 1.2
+        letterSpacing: 0
+        outline: { color: "#000000", width: 8 }
+        background: { color: "#00000000", padding: 16, radius: 8 }
+        shadow: { color: "#000000aa", blur: 0, x: 0, y: 0 }
+        transform: { x: 0, y: -60, scale: 1, rotation: 0, opacity: 1, flipX: false, flipY: false }
+        fadeIn: 0.4
+        fadeOut: 0.4
+        effects: []
+      - id: lower-third-1
+        type: shape
+        start: 5
+        duration: 4
+        enabled: true
+        note: ""
+        shape: rect
+        width: 760
+        height: 110
+        fill: "#141416dd"
+        stroke: "#ffffff"
+        strokeWidth: 0
+        cornerRadius: 12
+        transform: { x: -500, y: 380, scale: 1, rotation: 0, opacity: 1, flipX: false, flipY: false }
+        fadeIn: 0.3
+        fadeOut: 0.3
+        effects: []
+  - id: V3
+    kind: video
+    name: Lower thirds
+    hidden: false
+    locked: false
+    objects:
+      - id: subtitle-1
+        type: text
+        start: 1
+        duration: 3
+        enabled: true
+        note: ""
+        text: made with BananaVinci
+        font: Inter, Segoe UI, Arial, sans-serif
+        size: 56
+        color: "#FFFFFF"
+        bold: false
+        italic: false
+        align: center
+        lineHeight: 1.2
+        letterSpacing: 0
+        outline: { color: "#000000", width: 0 }
+        background: { color: "#000000aa", padding: 18, radius: 10 }
+        shadow: { color: "#000000aa", blur: 0, x: 0, y: 0 }
+        transform: { x: 0, y: 90, scale: 1, rotation: 0, opacity: 1, flipX: false, flipY: false }
+        fadeIn: 0.3
+        fadeOut: 0.3
+        effects: []
+      - id: lower-third-text-1
+        type: text
+        start: 5
+        duration: 4
+        enabled: true
+        note: ""
+        text: Test pattern
+        font: Inter, Segoe UI, Arial, sans-serif
+        size: 64
+        color: "#3B82F6"
+        bold: true
+        italic: false
+        align: center
+        lineHeight: 1.2
+        letterSpacing: 0
+        outline: { color: "#000000", width: 0 }
+        background: { color: "#00000000", padding: 16, radius: 8 }
+        shadow: { color: "#000000aa", blur: 0, x: 0, y: 0 }
+        transform: { x: -500, y: 380, scale: 1, rotation: 0, opacity: 1, flipX: false, flipY: false }
+        fadeIn: 0.3
+        fadeOut: 0.3
+        effects: []
+  - id: A1
+    kind: audio
+    name: Music
+    muted: false
+    solo: false
+    locked: false
+    objects:
+      - id: music-1
+        type: audio
+        source: music
+        start: 0
+        duration: 10
+        enabled: true
+        note: ""
+        in: 0
+        speed: 1
+        volume: 0.6
+        fadeIn: 1
+        fadeOut: 2

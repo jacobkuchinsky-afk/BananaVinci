@@ -1,0 +1,16 @@
+# BananaVinci asset library: reusable media shared by every project.
+# Safe to edit by hand or by AI. The editor picks up changes automatically.
+
+# Use an asset in a project by its name. In a .banana file, add a library entry with just an id and the asset:
+#     library:
+#       - { id: boom, asset: explosion-sfx }
+# and the file is copied into the project's media/ folder (by the running editor, or by npm run check).
+
+# name:   unique, lowercase-with-dashes. This is what you refer to.
+# file:   relative to this folder, or an absolute path for files inside a linked folder.
+# folders: linked folders. Media files in them are added automatically and stay where they are.
+# Full reference: docs/BANANA_FORMAT.md (section "Asset library")
+
+format: 1
+folders: []
+assets: []
