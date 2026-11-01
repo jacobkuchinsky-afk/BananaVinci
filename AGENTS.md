@@ -13,12 +13,15 @@ reference; this manual tells you when and why to use it.
 | 4 | Workflow for "animate what I'm saying" |
 | 5 | Running and verifying the editor |
 | 6 | Environment gotchas |
-| 7 | Current project status: what's done and what's open |
+| 7 | Project status and local notes |
 | 8 | The briefing prompt for a new agent |
 
+> **If `AGENTS.local.md` exists, read it too.** It holds notes that only apply to one machine and one person's own
+> projects (setup quirks, personal preferences, project status). It is not committed.
+
 > **Keep this manual alive.** When the user gives a new editing tip or correction, add it to Part 2 (style guide)
-> in plain words, with the reason if they gave one. Don't just follow the tip in that one edit. Keep Part 7 up to
-> date as projects move along, so the next agent can pick up where you left off.
+> in plain words, with the reason if they gave one. Don't just follow the tip in that one edit. Keep project status
+> (Part 7) up to date as projects move along, so the next agent can pick up where you left off.
 
 ---
 
@@ -28,6 +31,10 @@ reference; this manual tells you when and why to use it.
   itself). If the editor gets in the way of an edit, fix the editor, test it, and say what changed.
 - If the user **interrupts with a correction mid-task**, treat it as the new priority. Re-read what they said, then
   adjust the plan; don't argue for the old one.
+- **Read README.md and this file in full before the first edit**, not just skim them. The user noticed when an
+  agent skipped them (it invented sound effects instead of requesting them, and left the project in the wrong aspect).
+- **Any media you don't have (sound effects, graphics, photos, fonts) goes through an asset request** (Part 3).
+  Don't synthesize, draw or generate a stand-in, even a "clean" one: the user has their own and wants those used.
 - **Ask when you're genuinely unsure** about intent, but make sensible defaults on small things.
 - **Prefer asking the user for images** (asset requests, Part 3) over browsing for them, unless they say to go find
   some.
@@ -108,6 +115,33 @@ how they like things, write it down here.
 
 ### Composition
 - 1920×1080 unless told otherwise. Keep important things inside the middle ~80%.
+- **Phone takes are usually short-form vertical (1080×1920).** Check the aspect first: if the takes are portrait,
+  set the project to 1080×1920. Landscape files with a
+  portrait picture inside (old exports) go in with `fit: cover` plus a few pixels of `crop` on the sides to hide
+  the bars' edges.
+- **Overlay images: use `fit: none`.** The default `fit: contain` first scales an image to fill the canvas, so
+  `scale` then isn't relative to the image's real pixels. With `fit: none`, `scale: 1` = the PNG's own size.
+- **Audio must be loud and clean.** Phone takes come in very quiet (around −31 to −39 LUFS) and `volume` tops out at
+  2 (+6 dB), which isn't enough. Make a cleaned copy of each take instead: video copied, audio through
+  `highpass=f=80,afftdn=nr=14:nf=-44:tn=1,acompressor=threshold=-30dB:ratio=3:attack=8:release=120:knee=4`, then
+  a gain that brings the used part to −16 LUFS and `alimiter=limit=0.84`. Point the library entry at the copy, keep
+  the original next to it, and fine-tune clip-to-clip with `volume` (measure with `ebur128`).
+- **Transitions between talking-head clips:** keep hard cuts on silences; for a jump cut within the same take,
+  punch in (`scale` ≈ 1.15) on one side so it reads as a zoom cut. A clip from somewhere else (a callback to an old
+  video) crossfades in and out over ~0.15 s: put it on the track above and let the clips below run under its fades.
+  Close dead air after an insert by rippling the later clips.
+- **Cut every pause at a clip boundary.** When one clip's speech ends and the next one's starts, leave only
+  ~0.1–0.15 s of silence (trim the tail of one and the head of the next, then ripple). Find the real speech edges
+  in the waveform (`astats` RMS in 50 ms steps), not from Whisper: after a pause Whisper starts the first word
+  early, sometimes by 0.3–0.5 s, and it can end a word before the sound does (which clips it).
+- **Shorts get word-highlight captions for the whole video**, at the bottom (around y = +380 on 1080×1920, above
+  the YouTube UI): **DynaPuff**, bold, white with a thick black outline, 2–4 words per phrase broken where you'd
+  naturally pause, and the word being said turns yellow (`#FFD23F`) with a tiny scale-up. Fix Whisper's obvious
+  mishearings in the caption text. Measure word widths in the editor tab (`measureText`), not offline.
+- **Little asides/warnings** ("I also didn't have very good tools") are small text in a corner, in a nice font
+  (DynaPuff), **no background box**, a slight tilt at most, with a pop sound. Don't overdo it.
+- **Screenshots of comments go in slightly askew, alternating directions** (about −3° then +3°), each with a ding.
+- With captions at the bottom, put other overlays (photos, comments) in the empty space above the head.
 - One idea on screen at a time. When the topic changes, clear the old visuals (quick fade or slide out) before or as
   the new ones arrive.
 - Reuse the same visual language for parallel ideas. Callbacks read as intentional.
@@ -150,7 +184,7 @@ first time you add something). Find one with `npm run asset -- list <words>`. Th
 `media/` and fills in `file`/`kind`/`duration`. See "Asset library" in the format doc.
 
 ### Asking the user for media (asset requests)
-When the library doesn't have something, **don't guess or invent placeholder art. Request it:**
+When the library doesn't have something, **don't guess or invent placeholder art (or sounds). Request it:**
 
 ```bash
 npm run asset -- request cartoon-baby --project <name> --remove-background \
@@ -225,6 +259,11 @@ belongs in the asset library: `npm run asset -- add <file> --tags a,b --descript
   because browsers stop decoding video in background tabs. Run it from a visible tab. The browser encodes H.264 with
   the GPU when it can (WebCodecs) and falls back to raw frames + x264 otherwise. Videos are seeked in all-keyframe
   copies in `media/.export-proxies/`; deleting that folder is safe.
+- **After an export, check its timing**, not just one frame: `ffprobe` the video stream's `duration` and
+  `avg_frame_rate` (should match the project). The GPU path pipes raw H.264 to ffmpeg, which has no timestamps, and
+  ffmpeg's guesses can collapse after ~1.7 s (players show 2 s, then black). `server/export.ts` now stamps frames
+  by count (`setts` bitstream filter). An old broken render can be repaired without re-encoding:
+  `ffmpeg -i bad.mp4 -map 0 -bsf:v "setts=ts=N/(30*TB):duration=1/(30*TB)" -c copy fixed.mp4`.
 - Dev handle in the browser console: `bv.editor` (the store: `bv.editor.get().project`, `.set({...})`),
   `bv.store` (`commit`, `undo`), `bv.playback` and `bv.recorder`.
 - `npm test` (vitest) and `npm run typecheck` must stay green after editor changes.
@@ -241,43 +280,36 @@ belongs in the asset library: `npm run asset -- add <file> --tags a,b --descript
 - If transcription fails, the editor's error is sent over the websocket (`ws://localhost:5173/ws`, message
   `stt-error`). To debug, run the worker by hand: `python scripts/stt_worker.py x.wav x.json --model small.en`,
   using a 16 kHz mono wav made with ffmpeg.
+- **Bundled fonts:** fonts the canvas can't find on the system go in `public/fonts/` and get a line in
+  `BUNDLED_FONTS` (`src/engine/fonts.ts`), which registers them for preview and export. DynaPuff is there (OFL,
+  from Google Fonts). Use it as `font: DynaPuff, Inter, Arial, sans-serif`.
 - **Fonts in the canvas use the browser's family names, not the file's.** Test a name with `canvas.measureText` in the
   editor tab: if the width equals the fallback's, the font isn't resolving.
 - On Windows: **Bash heredocs containing apostrophes** sometimes fail to parse in an agent shell (write scripts to a
   file and run it), and PowerShell variable names are case-insensitive.
 
-### On this Mac (`~/Desktop/Coding/BananaVinci`)
-
-The README section "Setup on macOS" has the full install steps, env vars and troubleshooting table. What an agent
-needs to know:
-
-- **Already set up** (2026-10-28): `node_modules/` installed, `ffmpeg`/`ffprobe` from Homebrew, and a Python 3.11
-  venv in `.venv/` with `faster-whisper`, `rembg[cpu]` and Pillow. The Whisper `base` model is already cached.
-  Baseline: `npm test` (51 tests) and `npm run typecheck` pass, `npm run check -- projects/demo/demo.banana` is valid.
-- **Python is found automatically.** `server/stt.ts` uses `BANANA_PYTHON` if set, else `.venv/bin/python`, else
-  `python3`. Don't use the macOS system `python3` (3.9, no whisper/rembg). To run a worker by hand, call
-  `.venv/bin/python scripts/stt_worker.py …`, not `python`.
-- **Whisper runs on the CPU here** (no CUDA on a Mac). `base` is fast; `small.en` is more accurate but slower and
-  downloads ≈ 500 MB the first time.
-- **Port 5173 clash.** The user's other Vite projects (e.g. `~/Desktop/Coding/Portfolio`) also use 5173 and bind
-  IPv6 `::1`. BananaVinci then still starts without an error, but `localhost:5173` reaches the other app and every
-  `/api/...` call returns HTML. Check with `lsof -nP -iTCP:5173 -sTCP:LISTEN`. Don't kill the user's other servers;
-  run `PORT=5174 npm run dev` (launch config `bananavinci-5174`) and use `localhost:5174` in every `curl` example in
-  this manual instead of 5173.
+- **Python is found automatically.** `server/stt.ts` uses `BANANA_PYTHON` if set, else the project's
+  `.venv/bin/python`, else `python3`. To run a worker by hand, call the venv's Python, not the system one.
+- **Whisper runs on the CPU without CUDA** (always on a Mac). `base` is fast; `small.en` is more accurate but
+  slower and downloads ≈ 500 MB the first time.
+- **Port 5173 clash.** Another Vite app on 5173 that binds IPv6 `::1` takes over `localhost:5173`: BananaVinci
+  starts without an error, but every `/api/...` call returns HTML. Check with `lsof -nP -iTCP:5173 -sTCP:LISTEN`,
+  don't kill the other server, and run `PORT=5174 npm run dev` instead (then use 5174 in every `curl` example).
 - **Thumbnails** are only made when media is imported through the editor. Media copied into `media/` by hand has no
   timeline thumbnail until you make one: `ffmpeg -ss 1 -i <file> -frames:v 1 -vf scale=320:-2 media/.thumbs/<file>.jpg`.
 - `rembg` downloads its `u2net` model (≈ 170 MB, into `~/.u2net`) the first time background removal runs, so the
   first `--remove-background` fill needs internet and takes longer.
-- The folder is a **git repo** (branch `main`, no remote). `.gitignore` skips `node_modules/`, `.venv/`, editor
-  caches and `renders/`. Ask before committing, and never push without being asked.
 
 ---
 
-## Part 7: Current project status
+## Part 7: Project status and local notes
 
-`projects/demo` is a small sample project. Add a section here for each real project as you work on it: what's built
-(with times and which word each visual belongs to), which scripts generated what, and the open items. Keep it
-current so the next agent can continue.
+`projects/demo` is a small sample project, and the only one in the repo: `.gitignore` keeps every other project,
+the `assets/` library and `AGENTS.local.md` local.
+
+Keep a section in `AGENTS.local.md` for each real project as you work on it: what's built (with times and which
+word each visual belongs to), which scripts generated what, and the open items. Keep it current so the next agent
+can continue. Machine-specific setup notes and personal preferences go there too.
 
 ---
 
@@ -290,8 +322,8 @@ Paste this to a new AI agent working on BananaVinci:
 >
 > **Before doing anything, read `AGENTS.md` in full and keep it in context the whole session.** It is the editing
 > manual: how to edit the files, the style rules, how to get media, the workflow for animating narration, how to run
-> and verify the editor, and where each project stands (Part 7). Use `docs/BANANA_FORMAT.md` as the reference for
-> properties.
+> and verify the editor. If `AGENTS.local.md` exists, read it too: it says where each project stands. Use
+> `docs/BANANA_FORMAT.md` as the reference for properties.
 >
 > Key rules, in short:
 > - Show, don't tell. Visuals enter on the exact word (use the transcript's word times).

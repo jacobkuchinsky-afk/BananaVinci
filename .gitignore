@@ -13,3 +13,10 @@ projects/*/renders/*
 # OS / editor noise
 .DS_Store
 *.log
+
+# Personal work stays local: only the demo project is published
+projects/*
+!projects/demo/
+assets/
+AGENTS.local.md
+.claude/
