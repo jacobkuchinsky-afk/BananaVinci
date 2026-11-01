@@ -200,7 +200,10 @@ export class ExportJob {
       fs.writeFileSync(this.graphFile, h264 ? audio.filter : `[0:v]${vf}[vout];\n${audio.filter}`);
       args.push('-/filter_complex', this.graphFile, '-map', h264 ? '0:v' : '[vout]', '-map', '[aout]', '-c:a', 'aac', '-b:a', '192k');
     } else if (!h264) args.push('-vf', vf);
-    if (h264) args.push('-c:v', 'copy');
+    // A raw H.264 stream has no timestamps, and ffmpeg's guesses can collapse (on macOS/VideoToolbox, every frame after
+    // ~1.7 s landed 1 µs apart, so players showed 2 s and then nothing). Frames arrive in order with no B-frames, so
+    // stamp them by count instead.
+    if (h264) args.push('-bsf:v', `setts=ts=N/(${s.fps}*TB):duration=1/(${s.fps}*TB)`, '-c:v', 'copy');
     else args.push('-c:v', 'libx264', '-preset', 'medium', '-crf', String(s.crf), '-r', String(s.fps));
     args.push('-t', f(s.end - s.start), '-movflags', '+faststart', this.file);
 

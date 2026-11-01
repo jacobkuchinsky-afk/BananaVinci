@@ -7,6 +7,7 @@ import { getSocket, onMessage } from '../state/sync';
 import { renderFrame, type FrameSources } from './compositor';
 import { playedMedia } from '../format/groups';
 import { getImage, getVideo, imageReady, releasePurpose } from './mediaCache';
+import { loadBundledFonts } from './fonts';
 
 export interface ExportOptions {
   start: number;
@@ -114,6 +115,7 @@ export async function runExport(project: Project, opts: ExportOptions) {
   // GPU a frame takes a few ms. (It's also the same renderer the preview uses.)
   const ctx = canvas.getContext('2d')!;
   const h264 = await h264Config(width, height, fps);
+  await loadBundledFonts();
   await document.fonts.ready;
   await waitImages(project);
 

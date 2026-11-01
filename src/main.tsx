@@ -7,8 +7,10 @@ import * as playback from './engine/playback';
 import * as recorder from './engine/recorder';
 import * as store from './state/store';
 import './state/transcripts';
+import { loadBundledFonts } from './engine/fonts';
 
 connect();
+loadBundledFonts();
 
 // Debug handle for the browser console: bv.editor.get().project, etc.
 if (import.meta.env.DEV) (window as any).bv = { editor, recorder, playback, store };
